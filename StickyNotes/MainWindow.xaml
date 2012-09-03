@@ -1,0 +1,45 @@
+﻿<Window x:Class="StickyNotes.MainWindow"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:sharedclasses="clr-namespace:SharedClasses"
+		xmlns:forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+		Title="Sticky notes"
+		Height="350"
+		Width="525"
+		WindowStyle='None'
+		WindowStartupLocation='CenterScreen'
+		Topmost='True'
+		PreviewMouseLeftButtonDown='Window_PreviewMouseLeftButtonDown'
+		MouseRightButtonUp='Window_MouseRightButtonUp'
+		MouseUp='Window_MouseUp'
+		Loaded='Window_Loaded'
+		Closing='Window_Closing'
+		PreviewMouseWheel='Window_PreviewMouseWheel'>
+	<Grid>
+		<sharedclasses:NotificationAreaIcon x:Name='notificationAreaIcon1'
+											Icon='app.ico'
+											MouseClick='notificationAreaIcon1_MouseClick'>
+			<sharedclasses:NotificationAreaIcon.MenuItems>
+				<forms:MenuItem Text='Settings'>
+					<forms:MenuItem.MenuItems>
+						<forms:MenuItem BarBreak='True'
+										Text='No settings yet' />
+					</forms:MenuItem.MenuItems>
+				</forms:MenuItem>
+				<forms:MenuItem Text='Open saved folder' Click='opensavedfolderMenuItem_Click'/>
+				<forms:MenuItem Text='-' />
+				<forms:MenuItem Text='Exit'
+								Click='exitMenuItem_Click' />
+			</sharedclasses:NotificationAreaIcon.MenuItems>
+		</sharedclasses:NotificationAreaIcon>
+
+		<TextBox Name='mainTextbox'
+				 Margin='0'
+				 HorizontalScrollBarVisibility='Auto'
+				 VerticalScrollBarVisibility='Auto'
+				 AcceptsReturn='True'
+				 AcceptsTab='True'
+				 PreviewKeyDown='mainTextbox_PreviewKeyDown'
+				 TextChanged='mainTextbox_TextChanged'/>
+	</Grid>
+</Window>
