@@ -14,7 +14,8 @@
 		MouseUp='Window_MouseUp'
 		Loaded='Window_Loaded'
 		Closing='Window_Closing'
-		PreviewMouseWheel='Window_PreviewMouseWheel'>
+		PreviewMouseWheel='Window_PreviewMouseWheel'
+		Activated='Window_Activated'>
 	<Grid>
 		<sharedclasses:NotificationAreaIcon x:Name='notificationAreaIcon1'
 											Icon='app.ico'
@@ -40,6 +41,8 @@
 				 AcceptsReturn='True'
 				 AcceptsTab='True'
 				 PreviewKeyDown='mainTextbox_PreviewKeyDown'
-				 TextChanged='mainTextbox_TextChanged'/>
+				 Text='{Binding FileContent, UpdateSourceTrigger=PropertyChanged}'
+				 TextChanged='mainTextbox_TextChanged'
+				 PreviewMouseDown='mainTextbox_PreviewMouseDown'/>
 	</Grid>
 </Window>

@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 using System.IO;
 using System.Diagnostics;
 using System.Windows.Interop;
+using SharedClasses;
 
 namespace StickyNotes
 {
@@ -34,11 +35,15 @@ namespace StickyNotes
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
 			mainTextbox.Focus();
+			string path = GetFilePath(DateTime.Now.ToString("yyyy_MM_dd HH_mm_ss") + ".txt");
+			if (!File.Exists(path))
+				File.Create(path).Close();
+			mainTextbox.DataContext = new TodoFile(path);
 		}
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
-			SaveText(true);
+			//SaveText(true);
 		}
 
 		protected override void OnSourceInitialized(EventArgs e)
@@ -50,6 +55,11 @@ namespace StickyNotes
 			var handle = new WindowInteropHelper(Application.Current.MainWindow).Handle;
 			if (!Win32Api.RegisterHotKey(handle, Win32Api.Hotkey1, Win32Api.MOD_WIN, (int)System.Windows.Forms.Keys.N))
 				UserMessages.ShowWarningMessage(cThisAppName + " could not register hotkey WinKey + N");
+			else
+			{
+				this.ToolTip = "Hotkey WinKey + N";
+				notificationAreaIcon1.ToolTip = "Hotkey WinKey + N";
+			}
 		}
 
 		private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -165,7 +175,7 @@ namespace StickyNotes
 
 		private void mainTextbox_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			SaveText(false);
+			//SaveText(false);
 		}
 
 		private string GetFilePath(string filenameOnly)
@@ -173,22 +183,22 @@ namespace StickyNotes
 			return SettingsInterop.GetFullFilePathInLocalAppdata(filenameOnly, cThisAppName, "SavedTexts");
 		}
 
-		private void SaveText(bool forceSave = false)
-		{
-			DateTime now = DateTime.Now;
-			if (!lastSavedTime.HasValue)
-				lastSavedTime = now;
+		//private void SaveText(bool forceSave = false)
+		//{
+		//    DateTime now = DateTime.Now;
+		//    if (!lastSavedTime.HasValue)
+		//        lastSavedTime = now;
 
-			if (forceSave || now.Subtract(lastSavedTime.Value).TotalMilliseconds > minimumSaveInterval.TotalMilliseconds)
-			{
-				if (mainTextbox.Text.Trim().Length > 0)
-				{
-					string path = GetFilePath(now.ToString("yyyy_MM_dd HH_mm_ss") + ".txt");
-					File.WriteAllText(path, mainTextbox.Text);
-					lastSavedTime = now;
-				}
-			}
-		}
+		//    if (forceSave || now.Subtract(lastSavedTime.Value).TotalMilliseconds > minimumSaveInterval.TotalMilliseconds)
+		//    {
+		//        if (mainTextbox.Text.Trim().Length > 0)
+		//        {
+		//            string path = GetFilePath(now.ToString("yyyy_MM_dd HH_mm_ss") + ".txt");
+		//            File.WriteAllText(path, mainTextbox.Text);
+		//            lastSavedTime = now;
+		//        }
+		//    }
+		//}
 
 		private void opensavedfolderMenuItem_Click(object sender, EventArgs e)
 		{
@@ -208,6 +218,22 @@ namespace StickyNotes
 				mainTextbox.Text = mainTextbox.Text.Insert(mainTextbox.CaretIndex, tab);
 				mainTextbox.CaretIndex = oldcaretIndex + tab.Length;
 			}
+		}
+
+		private void mainTextbox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+		{
+			if (DateTime.Now.Subtract(lastWindowActivation).TotalMilliseconds < 500)
+			{
+				e.Handled = true;//So we dont lose a text selection if there was selected text
+				lastWindowActivation = DateTime.MinValue;
+				Console.WriteLine("T");
+			}
+		}
+
+		DateTime lastWindowActivation = DateTime.Now;
+		private void Window_Activated(object sender, EventArgs e)
+		{
+			lastWindowActivation = DateTime.Now;
 		}
 	}
 }

@@ -118,6 +118,12 @@
     <Compile Include="..\..\..\..\..\..\..\Francois\Dev\VSprojects\SharedClasses\SettingsInterop.cs">
       <Link>SettingsInterop.cs</Link>
     </Compile>
+    <Compile Include="..\..\SharedClasses\ActionsInterop.cs">
+      <Link>ActionsInterop.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SharedClasses\TodoFileInterop.cs">
+      <Link>TodoFileInterop.cs</Link>
+    </Compile>
     <Compile Include="..\..\SharedClasses\UserMessages.cs">
       <Link>UserMessages.cs</Link>
       <SubType>Form</SubType>
