@@ -121,6 +121,16 @@
     <Compile Include="..\..\SharedClasses\ActionsInterop.cs">
       <Link>ActionsInterop.cs</Link>
     </Compile>
+    <Compile Include="..\..\SharedClasses\MiniDownloadBarForm.cs">
+      <Link>MiniDownloadBarForm.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SharedClasses\MiniDownloadBarForm.designer.cs">
+      <Link>MiniDownloadBarForm.designer.cs</Link>
+      <DependentUpon>MiniDownloadBarForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="..\..\SharedClasses\ThreadingInterop.cs">
+      <Link>ThreadingInterop.cs</Link>
+    </Compile>
     <Compile Include="..\..\SharedClasses\TodoFileInterop.cs">
       <Link>TodoFileInterop.cs</Link>
     </Compile>
@@ -161,6 +171,10 @@
     <EmbeddedResource Include="..\..\..\..\..\..\..\Francois\Dev\VSprojects\SharedClasses\MiniIndeterminateProgress.resx">
       <Link>MiniIndeterminateProgress.resx</Link>
       <DependentUpon>MiniIndeterminateProgress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\SharedClasses\MiniDownloadBarForm.resx">
+      <Link>MiniDownloadBarForm.resx</Link>
+      <DependentUpon>MiniDownloadBarForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="..\..\SharedClasses\UserMessages.resx">
       <Link>UserMessages.resx</Link>
