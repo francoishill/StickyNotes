@@ -53,12 +53,12 @@ namespace StickyNotes
 			source.AddHook(WndProc);
 
 			var handle = new WindowInteropHelper(Application.Current.MainWindow).Handle;
-			if (!Win32Api.RegisterHotKey(handle, Win32Api.Hotkey1, Win32Api.MOD_WIN, (int)System.Windows.Forms.Keys.N))
-				UserMessages.ShowWarningMessage(cThisAppName + " could not register hotkey WinKey + N");
+			if (!Win32Api.RegisterHotKey(handle, Win32Api.Hotkey1, Win32Api.MOD_WIN, (int)System.Windows.Forms.Keys.S))
+				UserMessages.ShowWarningMessage(cThisAppName + " could not register hotkey WinKey + S");
 			else
 			{
-				this.ToolTip = "Hotkey WinKey + N";
-				notificationAreaIcon1.ToolTip = "Hotkey WinKey + N";
+				this.ToolTip = "Hotkey WinKey + S";
+				notificationAreaIcon1.ToolTip = "Hotkey WinKey + S";
 			}
 		}
 
