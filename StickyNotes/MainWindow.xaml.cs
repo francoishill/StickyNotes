@@ -222,7 +222,8 @@ namespace StickyNotes
 
 		private void mainTextbox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
-			if (DateTime.Now.Subtract(lastWindowActivation).TotalMilliseconds < 500)
+			if (DateTime.Now.Subtract(lastWindowActivation).TotalMilliseconds < 50
+				&& mainTextbox.SelectionLength > 0)
 			{
 				e.Handled = true;//So we dont lose a text selection if there was selected text
 				lastWindowActivation = DateTime.MinValue;

@@ -16,7 +16,8 @@ namespace StickyNotes
 		{
 			base.OnStartup(e);
 
-			SharedClasses.AutoUpdating.CheckForUpdates(null, null, true);
+			SharedClasses.AutoUpdating.CheckForUpdates_ExceptionHandler();
+			//SharedClasses.AutoUpdating.CheckForUpdates(null, null, true);
 		}
 	}
 }
