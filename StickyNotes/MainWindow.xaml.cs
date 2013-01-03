@@ -10,11 +10,11 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.IO;
 using System.Diagnostics;
 using System.Windows.Interop;
 using SharedClasses;
+using System.Globalization;
 
 namespace StickyNotes
 {
@@ -24,6 +24,12 @@ namespace StickyNotes
 	public partial class MainWindow : Window
 	{
 		private const string cThisAppName = "StickyNotes";
+		private const double cKeyboardMoveDistance_Major = 100;
+		private const double cKeyboardMoveDistance_Minor = 10;
+		private const double cKeyboardMoveDistance_Pixel = 1;
+		private const double cMinHeight = 37;
+		private const double cMinWidth = 60;
+
 		TimeSpan minimumSaveInterval = TimeSpan.FromMinutes(30);
 		DateTime? lastSavedTime = null;
 
@@ -32,17 +38,93 @@ namespace StickyNotes
 			InitializeComponent();
 		}
 
+		private Rect? GetWorkArea(Point pointToDetermineScreen)
+		{
+			foreach (var screen in System.Windows.Forms.Screen.AllScreens)
+				if (screen.WorkingArea.Contains(new System.Drawing.Point((int)pointToDetermineScreen.X, (int)pointToDetermineScreen.Y)))
+					return new Rect(new Point(screen.WorkingArea.Left, screen.WorkingArea.Top), new Size(screen.WorkingArea.Width, screen.WorkingArea.Height));
+			//If we did not find which screen obtains the point
+			return null;
+		}
+		private Rect WorkArea { get { return GetWorkArea(new Point(this.Left, this.Top)).Value; } }
+
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
 			mainTextbox.Focus();
+			CleanupZeroByteFiles();
 			string path = GetFilePath(DateTime.Now.ToString("yyyy_MM_dd HH_mm_ss") + ".txt");
-			if (!File.Exists(path))
-				File.Create(path).Close();
+			//if (!File.Exists(path))
+			//    File.Create(path).Close();
 			mainTextbox.DataContext = new TodoFile(path);
+			LoadLastWindowPosition();
+		}
+
+		private void CleanupZeroByteFiles()
+		{
+			string dir = Path.GetDirectoryName(GetFilePath("s.t"));
+			var filesWhichAreZeroBytes = Directory.GetFiles(dir, "*" + cFileExtension)
+				.Where(fp => new FileInfo(fp).Length == 0);
+			foreach (var f in filesWhichAreZeroBytes)
+			{
+				try
+				{
+					File.Delete(f);
+				}
+				catch (Exception exc)
+				{
+					UserMessages.ShowWarningMessage("Unable to delete empty file '" + f + "': " + exc.Message);
+					Process.Start("explorer", "/select,\"" + f + "\"");
+				}
+			}
+		}
+
+		private readonly string LastWindowPositionFilename = SettingsInterop.GetFullFilePathInLocalAppdata("LastWindowPos.fjset", cThisAppName);
+		private void LoadLastWindowPosition()
+		{
+			try
+			{
+				if (!File.Exists(LastWindowPositionFilename))
+					return;
+
+				string[] fileLines = File.ReadAllLines(LastWindowPositionFilename)
+					.Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
+
+				//We expect double values in this order on separate lines: Left, Top, ActualWidth, ActualHeight
+				if (fileLines.Length != 4)
+					return;
+				double tmpdouble;
+				if (fileLines.Count(l => !double.TryParse(l, out tmpdouble)) > 0)
+					return;//We failed to cast one of the items to a double
+
+				this.Left = double.Parse(fileLines[0]);
+				this.Top = double.Parse(fileLines[1]);
+				this.Width = double.Parse(fileLines[2]);
+				this.Height = double.Parse(fileLines[3]);
+			}
+			catch (Exception exc)
+			{
+				UserMessages.ShowWarningMessage("Failed loading last window position from file: " + exc.Message);
+			}
+		}
+
+		private void SaveLastWindowPosition()
+		{
+			try
+			{
+				File.WriteAllLines(LastWindowPositionFilename, new string[]
+				{ 
+					this.Left.ToString(),
+					this.Top.ToString(),
+					this.ActualWidth.ToString(),
+					this.ActualHeight.ToString()
+				});
+			}
+			catch { }
 		}
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
+			SaveLastWindowPosition();
 			//SaveText(true);
 		}
 
@@ -178,27 +260,53 @@ namespace StickyNotes
 			//SaveText(false);
 		}
 
-		private string GetFilePath(string filenameOnly)
+		private string GetFilePath(string filenameOnlyWithExtension)
 		{
-			return SettingsInterop.GetFullFilePathInLocalAppdata(filenameOnly, cThisAppName, "SavedTexts");
+			return SettingsInterop.GetFullFilePathInLocalAppdata(filenameOnlyWithExtension, cThisAppName, "SavedTexts");
 		}
 
-		//private void SaveText(bool forceSave = false)
-		//{
-		//    DateTime now = DateTime.Now;
-		//    if (!lastSavedTime.HasValue)
-		//        lastSavedTime = now;
+		const string cFileNameDateFormat = "yyyy_MM_dd HH_mm_ss";
+		const string cFileExtension = ".txt";
+		/*private void SaveText(bool forceSave = false)
+		{
+			DateTime now = DateTime.Now;
+			if (!lastSavedTime.HasValue)
+				lastSavedTime = now;
 
-		//    if (forceSave || now.Subtract(lastSavedTime.Value).TotalMilliseconds > minimumSaveInterval.TotalMilliseconds)
-		//    {
-		//        if (mainTextbox.Text.Trim().Length > 0)
-		//        {
-		//            string path = GetFilePath(now.ToString("yyyy_MM_dd HH_mm_ss") + ".txt");
-		//            File.WriteAllText(path, mainTextbox.Text);
-		//            lastSavedTime = now;
-		//        }
-		//    }
-		//}
+			if (forceSave || now.Subtract(lastSavedTime.Value).TotalMilliseconds > minimumSaveInterval.TotalMilliseconds)
+			{
+				if (!string.IsNullOrWhiteSpace(mainTextbox.Text))
+				{
+					string path = GetFilePath(now.ToString(cFileNameDateFormat) + cFileExtension);
+					File.WriteAllText(path, mainTextbox.Text);
+					lastSavedTime = now;
+				}
+			}
+		}*/
+
+		private string GetLastSavedText()
+		{
+			string dirForFiles = Path.GetDirectoryName(GetFilePath("s.t"));//Just use temp name to obtain its directory
+			var fileNamesWithoutExtensions = Directory.GetFiles(dirForFiles, "*" + cFileExtension)
+				.Select(fp => Path.GetFileNameWithoutExtension(fp));
+			//string newestDateFileNameWithoutExtension = null;
+			//DateTime newestFileDate = DateTime.MinValue;
+			Dictionary<string, DateTime> fileNameWithItsParsedDateTime = new Dictionary<string, DateTime>();
+			foreach (var fn in fileNamesWithoutExtensions)
+			{
+				//We get the newest file based on filename and not Modified Stamp as the used might have changed one of the old files
+				DateTime tmpdatetime;
+				if (DateTime.TryParseExact(fn, cFileNameDateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out tmpdatetime))
+					fileNameWithItsParsedDateTime.Add(fn, tmpdatetime);
+			}
+
+			if (fileNameWithItsParsedDateTime.Count == 0)
+				return "";
+
+			DateTime maxDate = fileNameWithItsParsedDateTime.Max(kv => kv.Value);
+			string maxFilename = fileNameWithItsParsedDateTime.First(kv => kv.Value.Equals(maxDate)).Key;
+			return File.ReadAllText(GetFilePath(maxFilename + cFileExtension));
+		}
 
 		private void opensavedfolderMenuItem_Click(object sender, EventArgs e)
 		{
@@ -235,6 +343,208 @@ namespace StickyNotes
 		private void Window_Activated(object sender, EventArgs e)
 		{
 			lastWindowActivation = DateTime.Now;
+		}
+
+		private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.System
+				&& (e.SystemKey == Key.LeftAlt || e.SystemKey == Key.RightAlt
+					|| e.SystemKey == Key.LeftCtrl || e.SystemKey == Key.RightCtrl
+					|| e.SystemKey == Key.LeftShift || e.SystemKey == Key.RightShift))
+				return;//When we actually press the Alt/Ctrl/Shift keys
+			if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt
+				|| e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl
+				|| e.Key == Key.LeftShift || e.Key == Key.RightShift)
+				return;//Usually this occurs if multiple SystemKeys (Alt/Ctrl/Shift) pressed
+
+			//Console.WriteLine("Key = " + e.Key + ", SystemKey = " + e.SystemKey + ", Modifiers = " + Keyboard.Modifiers);
+
+			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
+			{//The alt key was down while pressing another key
+				MoveMode moveMode = MoveMode.Major;
+				if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+					moveMode = MoveMode.Pixel;
+				else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+					moveMode = MoveMode.Minor;
+
+				//Console.WriteLine("moveMode = " + moveMode);
+
+				bool shouldHandleEvent = true;
+				bool moveMinor = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+				if ((e.Key == Key.System && e.SystemKey == Key.Up) || (e.Key == Key.Up))
+					MoveUp(moveMode);
+				else if ((e.Key == Key.System && e.SystemKey == Key.Down) || (e.Key == Key.Down))
+					MoveDown(moveMode);
+				else if ((e.Key == Key.System && e.SystemKey == Key.Left) || (e.Key == Key.Left))
+					MoveLeft(moveMode);
+				else if ((e.Key == Key.System && e.SystemKey == Key.Right) || (e.Key == Key.Right))
+					MoveRight(moveMode);
+				else if ((e.Key == Key.System && e.SystemKey == Key.Home) || (e.Key == Key.Home))
+					DecreaseHeight(moveMode);
+				else if ((e.Key == Key.System && e.SystemKey == Key.End) || (e.Key == Key.End))
+					IncreaseHeight(moveMode);
+				else if ((e.Key == Key.System && e.SystemKey == Key.Delete) || (e.Key == Key.Delete))
+					DecreaseWidth(moveMode);
+				else if ((e.Key == Key.System && e.SystemKey == Key.PageDown) || (e.Key == Key.PageDown))
+					IncreaseWidth(moveMode);
+				else
+					shouldHandleEvent = false;
+				if (shouldHandleEvent)
+					e.Handled = true;
+			}
+		}
+
+		private enum MoveMode { Major, Minor, Pixel };
+		private double GetMoveDistanceFromMoveMode(MoveMode moveMode)
+		{
+			return
+				moveMode == MoveMode.Major ? cKeyboardMoveDistance_Major
+				   : moveMode == MoveMode.Minor ? cKeyboardMoveDistance_Minor
+				   : cKeyboardMoveDistance_Pixel;
+		}
+
+		private void MoveUp(MoveMode moveMode)
+		{
+			double moveDistance = GetMoveDistanceFromMoveMode(moveMode);
+			double newTopPos = this.Top - moveDistance;
+			if (newTopPos < WorkArea.Top)
+			{
+				if (this.Top > WorkArea.Top)//The window is not currently at the top edge
+					newTopPos = WorkArea.Top;
+				else
+				{
+					Rect? workAreaScreenAboveCurrent = GetWorkArea(new Point(this.Left, this.Top - 1));
+					if (workAreaScreenAboveCurrent.HasValue)//There is a screen above this current one (where the window TopLeft position is)
+						this.Top -= moveDistance;
+					return;
+				}
+			}
+			this.Top = newTopPos;
+		}
+
+		private void MoveDown(MoveMode moveMode)
+		{
+			double moveDistance = GetMoveDistanceFromMoveMode(moveMode);
+			double newTopPos = this.Top + moveDistance;
+			if (newTopPos + this.ActualHeight > WorkArea.Bottom)
+			{
+				if (this.Top + this.ActualHeight < WorkArea.Bottom)//The window is not currently at the bottom edge
+					newTopPos = WorkArea.Bottom - this.ActualHeight;
+				else
+				{
+					Rect? workAreaScreenBelowCurrent = GetWorkArea(new Point(this.Left, this.Top + this.ActualHeight + 1));
+					if (workAreaScreenBelowCurrent.HasValue)//There is a screen below this current one (where the window TopLeft position is)
+						this.Top += moveDistance;
+					return;
+				}
+			}
+			this.Top = newTopPos;
+		}
+
+		private void MoveLeft(MoveMode moveMode)
+		{
+			double moveDistance = GetMoveDistanceFromMoveMode(moveMode);
+			double newLeftPos = this.Left - moveDistance;
+			if (newLeftPos < WorkArea.Left)
+			{
+				if (this.Left > WorkArea.Left)//The window is not currently at the left edge
+					newLeftPos = WorkArea.Left;
+				else
+				{
+					Rect? workAreaScreenLeftofCurrent = GetWorkArea(new Point(this.Left - 1, this.Top));
+					if (workAreaScreenLeftofCurrent.HasValue)//There is a screen left of this current one (where the window TopLeft position is)
+						this.Left -= moveDistance;
+					return;
+				}
+			}
+			this.Left = newLeftPos;
+		}
+
+		private void MoveRight(MoveMode moveMode)
+		{
+			double moveDistance = GetMoveDistanceFromMoveMode(moveMode);
+			double newLeftPos = this.Left + moveDistance;
+			if (newLeftPos + this.ActualWidth > WorkArea.Right)
+			{
+				if (this.Left + this.ActualWidth < WorkArea.Right)//The window is not currently at the right edge
+					newLeftPos = WorkArea.Right - this.ActualWidth;
+				else
+				{
+					Rect? workAreaScreenRightofCurrent = GetWorkArea(new Point(this.Left + this.ActualWidth + 1, this.Top + this.ActualHeight));
+					if (workAreaScreenRightofCurrent.HasValue)//There is a screen right of this current one (where the window TopLeft position is)
+						this.Left += moveDistance;
+					return;
+				}
+			}
+			this.Left = newLeftPos;
+		}
+
+		private void DecreaseHeight(MoveMode moveMode)
+		{
+			double decreaseAmount = GetMoveDistanceFromMoveMode(moveMode);
+			double newHeight = this.ActualHeight - decreaseAmount;
+			if (newHeight < cMinHeight) newHeight = cMinHeight;
+			this.Height = newHeight;
+		}
+
+		private void IncreaseHeight(MoveMode moveMode)
+		{
+			double increaseAmount = GetMoveDistanceFromMoveMode(moveMode);
+			double newHeight = this.ActualHeight + increaseAmount;
+			if (this.Top < WorkArea.Bottom && this.Top + newHeight > WorkArea.Bottom) newHeight = newHeight = WorkArea.Bottom - this.Top;
+			this.Height = newHeight;
+		}
+
+		private void DecreaseWidth(MoveMode moveMode)
+		{
+			double decreaseAmount = GetMoveDistanceFromMoveMode(moveMode);
+			double newWidth = this.ActualWidth - decreaseAmount;
+			if (newWidth < cMinWidth) newWidth = cMinWidth;
+			this.Width = newWidth;
+		}
+
+		private void IncreaseWidth(MoveMode moveMode)
+		{
+			double increaseAmount = GetMoveDistanceFromMoveMode(moveMode);
+			double newWidth = this.ActualWidth + increaseAmount;
+			if (this.Left < WorkArea.Right && this.Left + newWidth > WorkArea.Right) newWidth = newWidth = WorkArea.Right - this.Left;
+			this.Width = newWidth;
+		}
+
+		private void menuitemLoadLastSavedText_Click(object sender, RoutedEventArgs e)
+		{
+			/*if (!string.IsNullOrEmpty(mainTextbox.Text))
+				SaveText(true);*/
+			mainTextbox.Text = GetLastSavedText();
+		}
+
+		private void menuItemAbout_Click(object sender, RoutedEventArgs e)
+		{
+			bool origTopmost = this.Topmost;
+			this.Topmost = false;
+			try
+			{
+				AboutWindow2.ShowAboutWindow(new System.Collections.ObjectModel.ObservableCollection<DisplayItem>()
+				{
+					new DisplayItem("Author", "Francois Hill"),
+					new DisplayItem("Icon(s) obtained from", null)
+				});
+			}
+			finally
+			{
+				this.Topmost = origTopmost;
+			}
+		}
+
+		private void menuitemHide_Click(object sender, RoutedEventArgs e)
+		{
+			this.HideThisWindow();
+		}
+
+		private void menuItemExit_Click(object sender, RoutedEventArgs e)
+		{
+			//SaveText(true);
+			this.Close();
 		}
 	}
 }

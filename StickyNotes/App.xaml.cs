@@ -18,6 +18,9 @@ namespace StickyNotes
 
 			SharedClasses.AutoUpdating.CheckForUpdates_ExceptionHandler();
 			//SharedClasses.AutoUpdating.CheckForUpdates(null, null, true);
+
+			StickyNotes.MainWindow mw = new MainWindow();
+			mw.ShowDialog();
 		}
 	}
 }

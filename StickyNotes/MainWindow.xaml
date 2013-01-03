@@ -4,8 +4,8 @@
 		xmlns:sharedclasses="clr-namespace:SharedClasses"
 		xmlns:forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
 		Title="Sticky notes"
-		Height="350"
-		Width="525"
+		Height='186'
+		Width='335'
 		WindowStyle='None'
 		WindowStartupLocation='CenterScreen'
 		Topmost='True'
@@ -15,7 +15,8 @@
 		Loaded='Window_Loaded'
 		Closing='Window_Closing'
 		PreviewMouseWheel='Window_PreviewMouseWheel'
-		Activated='Window_Activated'>
+		Activated='Window_Activated'
+		PreviewKeyDown='Window_PreviewKeyDown'>
 	<Grid>
 		<sharedclasses:NotificationAreaIcon x:Name='notificationAreaIcon1'
 											Icon='app.ico'
@@ -27,7 +28,8 @@
 										Text='No settings yet' />
 					</forms:MenuItem.MenuItems>
 				</forms:MenuItem>
-				<forms:MenuItem Text='Open saved folder' Click='opensavedfolderMenuItem_Click'/>
+				<forms:MenuItem Text='Open saved folder'
+								Click='opensavedfolderMenuItem_Click' />
 				<forms:MenuItem Text='-' />
 				<forms:MenuItem Text='Exit'
 								Click='exitMenuItem_Click' />
@@ -35,7 +37,7 @@
 		</sharedclasses:NotificationAreaIcon>
 
 		<TextBox Name='mainTextbox'
-				 Margin='0'
+				 Margin='0 0 0 0'
 				 HorizontalScrollBarVisibility='Auto'
 				 VerticalScrollBarVisibility='Auto'
 				 AcceptsReturn='True'
@@ -43,6 +45,32 @@
 				 PreviewKeyDown='mainTextbox_PreviewKeyDown'
 				 Text='{Binding FileContent, UpdateSourceTrigger=PropertyChanged}'
 				 TextChanged='mainTextbox_TextChanged'
-				 PreviewMouseDown='mainTextbox_PreviewMouseDown'/>
+				 PreviewMouseDown='mainTextbox_PreviewMouseDown'>
+			<TextBox.ContextMenu>
+				<ContextMenu>
+					<MenuItem Command='Cut' />
+					<MenuItem Command='Copy' />
+					<MenuItem Command='Paste' />
+					<Separator />
+					<MenuItem Command='Undo' />
+					<MenuItem Command='Redo' />
+					<Separator />
+					<MenuItem Command='SelectAll' />
+					<Separator />
+					<MenuItem Header='_More'>
+						<MenuItem Header='Load _last saved text'
+								  Click='menuitemLoadLastSavedText_Click' />
+						<Separator />
+						<MenuItem Header='_About'
+								  Click='menuItemAbout_Click' />
+						<Separator />
+						<MenuItem Header='_Hide'
+								  Click='menuitemHide_Click' />
+						<MenuItem Header='E_xit'
+								  Click='menuItemExit_Click' />
+					</MenuItem>
+				</ContextMenu>
+			</TextBox.ContextMenu>
+		</TextBox>
 	</Grid>
 </Window>
