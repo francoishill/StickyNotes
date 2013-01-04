@@ -56,7 +56,7 @@ namespace StickyNotes
 			//if (!File.Exists(path))
 			//    File.Create(path).Close();
 			mainTextbox.DataContext = new TodoFile(path);
-			LoadLastWindowPosition();
+			this.LoadLastWindowPosition(cThisAppName);
 		}
 
 		private void CleanupZeroByteFiles()
@@ -78,53 +78,9 @@ namespace StickyNotes
 			}
 		}
 
-		private readonly string LastWindowPositionFilename = SettingsInterop.GetFullFilePathInLocalAppdata("LastWindowPos.fjset", cThisAppName);
-		private void LoadLastWindowPosition()
-		{
-			try
-			{
-				if (!File.Exists(LastWindowPositionFilename))
-					return;
-
-				string[] fileLines = File.ReadAllLines(LastWindowPositionFilename)
-					.Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
-
-				//We expect double values in this order on separate lines: Left, Top, ActualWidth, ActualHeight
-				if (fileLines.Length != 4)
-					return;
-				double tmpdouble;
-				if (fileLines.Count(l => !double.TryParse(l, out tmpdouble)) > 0)
-					return;//We failed to cast one of the items to a double
-
-				this.Left = double.Parse(fileLines[0]);
-				this.Top = double.Parse(fileLines[1]);
-				this.Width = double.Parse(fileLines[2]);
-				this.Height = double.Parse(fileLines[3]);
-			}
-			catch (Exception exc)
-			{
-				UserMessages.ShowWarningMessage("Failed loading last window position from file: " + exc.Message);
-			}
-		}
-
-		private void SaveLastWindowPosition()
-		{
-			try
-			{
-				File.WriteAllLines(LastWindowPositionFilename, new string[]
-				{ 
-					this.Left.ToString(),
-					this.Top.ToString(),
-					this.ActualWidth.ToString(),
-					this.ActualHeight.ToString()
-				});
-			}
-			catch { }
-		}
-
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
-			SaveLastWindowPosition();
+			this.SaveLastWindowPosition(cThisAppName);
 			//SaveText(true);
 		}
 
