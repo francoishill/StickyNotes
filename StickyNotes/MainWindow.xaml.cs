@@ -350,7 +350,7 @@ namespace StickyNotes
 			}
 		}
 
-		Maybe good idea to move these methods into the 'WPFHelper.cs' file too (MoveUp, MoveDown, MoveLeft, MoveRight, IncreaseHeight, DecreaseHeight, IncreaseWidth, DecreaseWidth
+		//Maybe good idea to move these methods into the 'WPFHelper.cs' file too (MoveUp, MoveDown, MoveLeft, MoveRight, IncreaseHeight, DecreaseHeight, IncreaseWidth, DecreaseWidth
 
 		private enum MoveMode { Major, Minor, Pixel };
 		private double GetMoveDistanceFromMoveMode(MoveMode moveMode)
