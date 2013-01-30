@@ -1,9 +1,10 @@
 ﻿<Window x:Class="StickyNotes.MainWindow"
 		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:sharedclasses="clr-namespace:SharedClasses"
+		xmlns:sharedclasses="clr-namespace:SharedClasses;assembly=_OwnAppsSharedDll"
 		xmlns:forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
 		Title="Sticky notes"
+		Icon='app.ico'
 		Height='186'
 		Width='335'
 		WindowStyle='None'

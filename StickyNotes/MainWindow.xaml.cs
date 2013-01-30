@@ -31,7 +31,7 @@ namespace StickyNotes
 		private const double cMinWidth = 60;
 
 		TimeSpan minimumSaveInterval = TimeSpan.FromMinutes(30);
-		DateTime? lastSavedTime = null;
+		//DateTime? lastSavedTime = null;
 
 		public MainWindow()
 		{
