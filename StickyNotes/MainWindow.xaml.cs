@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Windows.Interop;
 using SharedClasses;
 using System.Globalization;
+using System.Web;
 
 namespace StickyNotes
 {
@@ -472,6 +473,12 @@ namespace StickyNotes
 			/*if (!string.IsNullOrEmpty(mainTextbox.Text))
 				SaveText(true);*/
 			mainTextbox.Text = GetLastSavedText();
+		}
+
+		private void menitemOpenWebsite_Click(object sender, RoutedEventArgs e)
+		{
+			Process.Start(string.Format("http://firepuma.com/journal/filterloggedin_link/{0}",
+				EncodeAndDecodeInterop.EncodeStringHex(TodoFile.cLinkText, err => UserMessages.ShowErrorMessage(err))));
 		}
 
 		private void menuItemAbout_Click(object sender, RoutedEventArgs e)

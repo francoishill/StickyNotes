@@ -61,6 +61,8 @@
 					<MenuItem Header='_More'>
 						<MenuItem Header='Load _last saved text'
 								  Click='menuitemLoadLastSavedText_Click' />
+						<MenuItem Header='Open website'
+								  Click='menitemOpenWebsite_Click' />
 						<Separator />
 						<MenuItem Header='_About'
 								  Click='menuItemAbout_Click' />
