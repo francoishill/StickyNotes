@@ -468,6 +468,17 @@ namespace StickyNotes
 			this.Width = newWidth;
 		}
 
+		private void menuitemSaveTextOnline_Click(object sender, RoutedEventArgs e)
+		{
+			var todofile = mainTextbox.DataContext as TodoFile;
+			if (todofile == null)
+			{
+				UserMessages.ShowErrorMessage("Cannot find the TodoFile object, cannot save text online.");
+				return;
+			}
+			todofile.SaveOnline();
+		}
+
 		private void menuitemLoadLastSavedText_Click(object sender, RoutedEventArgs e)
 		{
 			/*if (!string.IsNullOrEmpty(mainTextbox.Text))

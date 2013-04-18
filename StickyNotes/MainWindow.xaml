@@ -57,11 +57,13 @@
 					<MenuItem Command='Redo' />
 					<Separator />
 					<MenuItem Command='SelectAll' />
-					<Separator />
+                    <MenuItem Header='Save text _online'
+                              Click='menuitemSaveTextOnline_Click' />
+                    <Separator />
 					<MenuItem Header='_More'>
 						<MenuItem Header='Load _last saved text'
 								  Click='menuitemLoadLastSavedText_Click' />
-						<MenuItem Header='Open website'
+                        <MenuItem Header='Open website'
 								  Click='menitemOpenWebsite_Click' />
 						<Separator />
 						<MenuItem Header='_About'
