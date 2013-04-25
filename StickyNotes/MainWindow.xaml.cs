@@ -165,35 +165,12 @@ namespace StickyNotes
 			//notificationAreaIcon1.UpdateLayout();
 		}
 
-		const int cZoomInterval = 2;
-		const int cHorizontalScrollInterval = 10;
 		private void Window_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
 		{
 			if (Keyboard.Modifiers == ModifierKeys.Control)//Zoom text
-			{
-				if (e.Delta < 0)//Rolled down
-				{
-					if (mainTextbox.FontSize - cZoomInterval >= 8)
-						mainTextbox.FontSize -= cZoomInterval;
-				}
-				else if (e.Delta > 0)//Rolled up
-				{
-					if (mainTextbox.FontSize + cZoomInterval <= 50)
-						mainTextbox.FontSize += cZoomInterval;
-				}
-			}
+				mainTextbox.ZoomControlBasedOnMouseWheelEvent(ref e);
 			else if (Keyboard.Modifiers == ModifierKeys.Shift)//Scroll horizontally
-			{
-				e.Handled = true;
-				if (e.Delta < 0)//Rolled down
-				{
-					mainTextbox.ScrollToHorizontalOffset(mainTextbox.HorizontalOffset + cHorizontalScrollInterval);
-				}
-				else if (e.Delta > 0)//Rolled up
-				{
-					mainTextbox.ScrollToHorizontalOffset(mainTextbox.HorizontalOffset - cHorizontalScrollInterval);
-				}
-			}
+				mainTextbox.ZoomTextboxbaseControlBasedOnMouseWheelEvent(ref e);
 		}
 
 		private void notificationAreaIcon1_MouseClick(object sender, MouseButtonEventArgs e)
