@@ -293,6 +293,22 @@ namespace StickyNotes
 
 			//Console.WriteLine("Key = " + e.Key + ", SystemKey = " + e.SystemKey + ", Modifiers = " + Keyboard.Modifiers);
 
+			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+			{
+				if (e.Key == Key.S)
+				{
+					e.Handled = true;
+					SaveTextToFile();
+					return;
+				}
+				else if (e.Key == Key.O)
+				{
+					e.Handled = true;
+					LoadTextFromFile();
+					return;
+				}
+			}
+
 			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
 			{//The alt key was down while pressing another key
 				MoveMode moveMode = MoveMode.Major;
@@ -326,6 +342,41 @@ namespace StickyNotes
 				if (shouldHandleEvent)
 					e.Handled = true;
 			}
+		}
+
+		private void SaveTextToFile()
+		{
+			if (string.IsNullOrWhiteSpace(mainTextbox.Text))
+			{
+				UserMessages.ShowWarningMessage("The current text is blank or whitespaces, cannot save to file.");
+				return;
+			}
+
+			var filePath = FileSystemInterop.SelectNewSaveFile(
+				"Please select file to save the text to",
+				null,
+				"Text files (*.txt)|*.txt",
+				true);
+			if (string.IsNullOrWhiteSpace(filePath))
+				return;
+
+			File.WriteAllText(filePath, mainTextbox.Text);
+		}
+
+		private void LoadTextFromFile()
+		{
+			if (!string.IsNullOrWhiteSpace(mainTextbox.Text)
+				&& !UserMessages.Confirm("By importing another file the current text will be lost, do you want to continue?"))
+				return;
+
+			var filePath = FileSystemInterop.SelectFile(
+				"Please select file to load",
+				null,
+				"Text files (*.txt)|*.txt");
+			if (string.IsNullOrWhiteSpace(filePath))
+				return;
+
+			mainTextbox.Text = File.ReadAllText(filePath);
 		}
 
 		private enum MoveMode { Major, Minor, Pixel };
@@ -496,6 +547,16 @@ namespace StickyNotes
 		{
 			//SaveText(true);
 			this.Close();
+		}
+
+		private void menuitemLoadTextFromFile_Click(object sender, RoutedEventArgs e)
+		{
+			LoadTextFromFile();
+		}
+
+		private void menuitemSaveTextToFile_Click(object sender, RoutedEventArgs e)
+		{
+			SaveTextToFile();
 		}
 	}
 }

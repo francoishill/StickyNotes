@@ -60,6 +60,11 @@
                     <MenuItem Header='Save text _online'
                               Click='menuitemSaveTextOnline_Click' />
                     <Separator />
+                    <MenuItem Header='_Load text from file'
+                              Click='menuitemLoadTextFromFile_Click' />
+                    <MenuItem Header='_Save text to file'
+                              Click='menuitemSaveTextToFile_Click' />
+                    <Separator />
 					<MenuItem Header='_More'>
 						<MenuItem Header='Load _last saved text'
 								  Click='menuitemLoadLastSavedText_Click' />

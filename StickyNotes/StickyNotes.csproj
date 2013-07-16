@@ -114,6 +114,9 @@
     <Compile Include="..\..\SharedClasses\ActionsInterop.cs">
       <Link>ActionsInterop.cs</Link>
     </Compile>
+    <Compile Include="..\..\SharedClasses\FileSystemInterop.cs">
+      <Link>FileSystemInterop.cs</Link>
+    </Compile>
     <Compile Include="..\..\SharedClasses\TodoFileInterop.cs">
       <Link>TodoFileInterop.cs</Link>
     </Compile>
