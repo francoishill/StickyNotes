@@ -170,7 +170,7 @@ namespace StickyNotes
 			if (Keyboard.Modifiers == ModifierKeys.Control)//Zoom text
 				mainTextbox.ZoomControlBasedOnMouseWheelEvent(ref e);
 			else if (Keyboard.Modifiers == ModifierKeys.Shift)//Scroll horizontally
-				mainTextbox.ZoomTextboxbaseControlBasedOnMouseWheelEvent(ref e);
+				mainTextbox.ScrollTextboxHorizontallyFromMouseWheelEvent(ref e);
 		}
 
 		private void notificationAreaIcon1_MouseClick(object sender, MouseButtonEventArgs e)
