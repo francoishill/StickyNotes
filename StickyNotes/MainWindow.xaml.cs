@@ -24,7 +24,9 @@ namespace StickyNotes
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		private const string cThisAppName = "StickyNotes";
+		public bool wasTextFileLoadedByArguments = false;
+
+		internal const string cThisAppName = "StickyNotes";
 		private const double cKeyboardMoveDistance_Major = 100;
 		private const double cKeyboardMoveDistance_Minor = 10;
 		private const double cKeyboardMoveDistance_Pixel = 1;
@@ -53,10 +55,13 @@ namespace StickyNotes
 		{
 			mainTextbox.Focus();
 			CleanupZeroByteFiles();
-			string path = GetFilePath(DateTime.Now.ToString("yyyy_MM_dd HH_mm_ss") + ".txt");
-			//if (!File.Exists(path))
-			//    File.Create(path).Close();
-			mainTextbox.DataContext = new TodoFile(path);
+			if (!wasTextFileLoadedByArguments)
+			{
+				string path = GetFilePath(DateTime.Now.ToString("yyyy_MM_dd HH_mm_ss") + ".txt");
+				//if (!File.Exists(path))
+				//    File.Create(path).Close();
+				mainTextbox.DataContext = new TodoFile(path);
+			}
 			this.LoadLastWindowPosition(cThisAppName);
 		}
 
@@ -93,7 +98,15 @@ namespace StickyNotes
 
 			var handle = new WindowInteropHelper(Application.Current.MainWindow).Handle;
 			if (!Win32Api.RegisterHotKey(handle, Win32Api.Hotkey1, Win32Api.MOD_WIN, (int)System.Windows.Forms.Keys.S))
-				UserMessages.ShowWarningMessage(cThisAppName + " could not register hotkey WinKey + S");
+			{
+				var processes = Process.GetProcessesByName(cThisAppName);
+				var foundAnotherStickyNotes = false;
+				foreach (var proc in processes)
+					if (proc.Id != Process.GetCurrentProcess().Id)
+						foundAnotherStickyNotes = true;
+				if (!foundAnotherStickyNotes)
+					UserMessages.ShowWarningMessage(cThisAppName + " could not register hotkey WinKey + S");
+			}
 			else
 			{
 				this.ToolTip = "Hotkey WinKey + S";
@@ -363,20 +376,24 @@ namespace StickyNotes
 			File.WriteAllText(filePath, mainTextbox.Text);
 		}
 
-		private void LoadTextFromFile()
+		internal void LoadTextFromFile(string filePath = null)
 		{
 			if (!string.IsNullOrWhiteSpace(mainTextbox.Text)
 				&& !UserMessages.Confirm("By importing another file the current text will be lost, do you want to continue?"))
 				return;
 
-			var filePath = FileSystemInterop.SelectFile(
-				"Please select file to load",
-				null,
-				"Text files (*.txt)|*.txt");
-			if (string.IsNullOrWhiteSpace(filePath))
-				return;
+			if (filePath == null)
+			{
+				filePath = FileSystemInterop.SelectFile(
+					"Please select file to load",
+					null,
+					"Text files (*.txt)|*.txt");
+				if (string.IsNullOrWhiteSpace(filePath))
+					return;
+			}
 
-			mainTextbox.Text = File.ReadAllText(filePath);
+			mainTextbox.DataContext = new TodoFile(filePath);
+			//mainTextbox.Text = File.ReadAllText(filePath);
 		}
 
 		private enum MoveMode { Major, Minor, Pixel };

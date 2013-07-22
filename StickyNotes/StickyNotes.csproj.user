@@ -3,4 +3,16 @@
   <PropertyGroup>
     <ProjectView>ProjectFiles</ProjectView>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <StartArguments>"C:\devKiln\build_albion\tundra-output\win32-baked-rtest-default\Prp6Interface.xml"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <StartArguments>"C:\devKiln\build_albion\tundra-output\win32-baked-rtest-default\Prp6Interface.xml"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <StartArguments>"C:\devKiln\build_albion\tundra-output\win32-baked-rtest-default\Prp6Interface.xml"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <StartArguments>"C:\devKiln\build_albion\tundra-output\win32-baked-rtest-default\Prp6Interface.xml"</StartArguments>
+  </PropertyGroup>
 </Project>
