@@ -27,7 +27,7 @@ namespace StickyNotes
 				var filePath = e.Args[0];
 				if (e.Args.Length > 1)
 					UserMessages.ShowWarningMessage("Only one argument is supported by " + StickyNotes.MainWindow.cThisAppName);
-				else if (!File.Exists(e.Args[0]))
+				else if (!File.Exists(filePath))
 					UserMessages.ShowWarningMessage("Cannot open file with " + StickyNotes.MainWindow.cThisAppName + ", file does not exist: " + filePath);
 				else
 				{
