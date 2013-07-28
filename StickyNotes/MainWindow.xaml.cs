@@ -27,11 +27,6 @@ namespace StickyNotes
 		public bool wasTextFileLoadedByArguments = false;
 
 		internal const string cThisAppName = "StickyNotes";
-		private const double cKeyboardMoveDistance_Major = 100;
-		private const double cKeyboardMoveDistance_Minor = 10;
-		private const double cKeyboardMoveDistance_Pixel = 1;
-		private const double cMinHeight = 37;
-		private const double cMinWidth = 60;
 
 		TimeSpan minimumSaveInterval = TimeSpan.FromMinutes(30);
 		//DateTime? lastSavedTime = null;
@@ -324,32 +319,32 @@ namespace StickyNotes
 
 			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
 			{//The alt key was down while pressing another key
-				MoveMode moveMode = MoveMode.Major;
+				WPFHelper.MoveMode moveMode = WPFHelper.MoveMode.Major;
 				if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-					moveMode = MoveMode.Pixel;
+					moveMode = WPFHelper.MoveMode.Pixel;
 				else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
-					moveMode = MoveMode.Minor;
+					moveMode = WPFHelper.MoveMode.Minor;
 
 				//Console.WriteLine("moveMode = " + moveMode);
 
 				bool shouldHandleEvent = true;
 				bool moveMinor = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
 				if ((e.Key == Key.System && e.SystemKey == Key.Up) || (e.Key == Key.Up))
-					MoveUp(moveMode);
+					this.MoveUp(moveMode);
 				else if ((e.Key == Key.System && e.SystemKey == Key.Down) || (e.Key == Key.Down))
-					MoveDown(moveMode);
+					this.MoveDown(moveMode);
 				else if ((e.Key == Key.System && e.SystemKey == Key.Left) || (e.Key == Key.Left))
-					MoveLeft(moveMode);
+					this.MoveLeft(moveMode);
 				else if ((e.Key == Key.System && e.SystemKey == Key.Right) || (e.Key == Key.Right))
-					MoveRight(moveMode);
+					this.MoveRight(moveMode);
 				else if ((e.Key == Key.System && e.SystemKey == Key.Home) || (e.Key == Key.Home))
-					DecreaseHeight(moveMode);
+					this.DecreaseHeight(moveMode);
 				else if ((e.Key == Key.System && e.SystemKey == Key.End) || (e.Key == Key.End))
-					IncreaseHeight(moveMode);
+					this.IncreaseHeight(moveMode);
 				else if ((e.Key == Key.System && e.SystemKey == Key.Delete) || (e.Key == Key.Delete))
-					DecreaseWidth(moveMode);
+					this.DecreaseWidth(moveMode);
 				else if ((e.Key == Key.System && e.SystemKey == Key.PageDown) || (e.Key == Key.PageDown))
-					IncreaseWidth(moveMode);
+					this.IncreaseWidth(moveMode);
 				else
 					shouldHandleEvent = false;
 				if (shouldHandleEvent)
@@ -394,123 +389,6 @@ namespace StickyNotes
 
 			mainTextbox.DataContext = new TodoFile(filePath);
 			//mainTextbox.Text = File.ReadAllText(filePath);
-		}
-
-		private enum MoveMode { Major, Minor, Pixel };
-		private double GetMoveDistanceFromMoveMode(MoveMode moveMode)
-		{
-			return
-				moveMode == MoveMode.Major ? cKeyboardMoveDistance_Major
-				   : moveMode == MoveMode.Minor ? cKeyboardMoveDistance_Minor
-				   : cKeyboardMoveDistance_Pixel;
-		}
-
-		private void MoveUp(MoveMode moveMode)
-		{
-			double moveDistance = GetMoveDistanceFromMoveMode(moveMode);
-			double newTopPos = this.Top - moveDistance;
-			if (newTopPos < WorkArea.Top)
-			{
-				if (this.Top > WorkArea.Top)//The window is not currently at the top edge
-					newTopPos = WorkArea.Top;
-				else
-				{
-					Rect? workAreaScreenAboveCurrent = GetWorkArea(new Point(this.Left, this.Top - 1));
-					if (workAreaScreenAboveCurrent.HasValue)//There is a screen above this current one (where the window TopLeft position is)
-						this.Top -= moveDistance;
-					return;
-				}
-			}
-			this.Top = newTopPos;
-		}
-
-		private void MoveDown(MoveMode moveMode)
-		{
-			double moveDistance = GetMoveDistanceFromMoveMode(moveMode);
-			double newTopPos = this.Top + moveDistance;
-			if (newTopPos + this.ActualHeight > WorkArea.Bottom)
-			{
-				if (this.Top + this.ActualHeight < WorkArea.Bottom)//The window is not currently at the bottom edge
-					newTopPos = WorkArea.Bottom - this.ActualHeight;
-				else
-				{
-					Rect? workAreaScreenBelowCurrent = GetWorkArea(new Point(this.Left, this.Top + this.ActualHeight + 1));
-					if (workAreaScreenBelowCurrent.HasValue)//There is a screen below this current one (where the window TopLeft position is)
-						this.Top += moveDistance;
-					return;
-				}
-			}
-			this.Top = newTopPos;
-		}
-
-		private void MoveLeft(MoveMode moveMode)
-		{
-			double moveDistance = GetMoveDistanceFromMoveMode(moveMode);
-			double newLeftPos = this.Left - moveDistance;
-			if (newLeftPos < WorkArea.Left)
-			{
-				if (this.Left > WorkArea.Left)//The window is not currently at the left edge
-					newLeftPos = WorkArea.Left;
-				else
-				{
-					Rect? workAreaScreenLeftofCurrent = GetWorkArea(new Point(this.Left - 1, this.Top));
-					if (workAreaScreenLeftofCurrent.HasValue)//There is a screen left of this current one (where the window TopLeft position is)
-						this.Left -= moveDistance;
-					return;
-				}
-			}
-			this.Left = newLeftPos;
-		}
-
-		private void MoveRight(MoveMode moveMode)
-		{
-			double moveDistance = GetMoveDistanceFromMoveMode(moveMode);
-			double newLeftPos = this.Left + moveDistance;
-			if (newLeftPos + this.ActualWidth > WorkArea.Right)
-			{
-				if (this.Left + this.ActualWidth < WorkArea.Right)//The window is not currently at the right edge
-					newLeftPos = WorkArea.Right - this.ActualWidth;
-				else
-				{
-					Rect? workAreaScreenRightofCurrent = GetWorkArea(new Point(this.Left + this.ActualWidth + 1, this.Top + this.ActualHeight));
-					if (workAreaScreenRightofCurrent.HasValue)//There is a screen right of this current one (where the window TopLeft position is)
-						this.Left += moveDistance;
-					return;
-				}
-			}
-			this.Left = newLeftPos;
-		}
-
-		private void DecreaseHeight(MoveMode moveMode)
-		{
-			double decreaseAmount = GetMoveDistanceFromMoveMode(moveMode);
-			double newHeight = this.ActualHeight - decreaseAmount;
-			if (newHeight < cMinHeight) newHeight = cMinHeight;
-			this.Height = newHeight;
-		}
-
-		private void IncreaseHeight(MoveMode moveMode)
-		{
-			double increaseAmount = GetMoveDistanceFromMoveMode(moveMode);
-			double newHeight = this.ActualHeight + increaseAmount;
-			if (this.Top < WorkArea.Bottom && this.Top + newHeight > WorkArea.Bottom) newHeight = newHeight = WorkArea.Bottom - this.Top;
-			this.Height = newHeight;
-		}
-
-		private void DecreaseWidth(MoveMode moveMode)
-		{
-			double decreaseAmount = GetMoveDistanceFromMoveMode(moveMode);
-			double newWidth = this.ActualWidth - decreaseAmount;
-			if (newWidth < cMinWidth) newWidth = cMinWidth;
-			this.Width = newWidth;
-		}
-
-		private void IncreaseWidth(MoveMode moveMode)
-		{
-			double increaseAmount = GetMoveDistanceFromMoveMode(moveMode);
-			double newWidth = this.ActualWidth + increaseAmount;
-			if (this.Left < WorkArea.Right && this.Left + newWidth > WorkArea.Right) newWidth = newWidth = WorkArea.Right - this.Left;
-			this.Width = newWidth;
 		}
 
 		private void menuitemSaveTextOnline_Click(object sender, RoutedEventArgs e)
